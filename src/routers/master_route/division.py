@@ -8,7 +8,12 @@ from ...database import get_db
 from ...models.Master.division_master import DivisionMaster
 from ...models.Master.station_master import StationMaster
 from ...models.Master.zone_master import ZoneMaster
-from ...schemas.master_schema.division_master import DivisionCreate, DivisionGet, DivisionUpdate
+from ...schemas.master_schema.division_master import (
+    DivisionCreate,
+    DivisionGet,
+    DivisionUpdate,
+    DivisionWithZone,
+)
 from ...schemas.master_schema.station_master import StationGet
 
 router = APIRouter(prefix="/divisions", tags=["Divisions"])
@@ -40,9 +45,28 @@ def create_division(payload: DivisionCreate, db: Session = Depends(get_db)):
     return division
 
 
-@router.get("/", response_model=list[DivisionGet])
+@router.get("/", response_model=list[DivisionWithZone])
 def get_divisions(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return db.query(DivisionMaster).offset(skip).limit(limit).all()
+    rows = (
+        db.query(
+            DivisionMaster,
+            ZoneMaster.zone.label("zone_name"),
+            ZoneMaster.zone_code.label("zone_code"),
+        )
+        .join(ZoneMaster, DivisionMaster.zone_id == ZoneMaster.id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+    return [
+        {
+            **DivisionGet.model_validate(division).model_dump(),
+            "zone_name": zone_name,
+            "zone_code": zone_code,
+        }
+        for division, zone_name, zone_code in rows
+    ]
 
 
 @router.get("/{division_id}", response_model=DivisionGet)

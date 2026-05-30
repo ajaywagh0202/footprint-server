@@ -6,7 +6,15 @@ from sqlalchemy.orm import Session
 
 from ...database import get_db
 from ...models.Master.user import User
-from ...schemas.master_schema.user import UserCreate, UserOut, UserUpdate
+from ...schemas.master_schema.user import (
+    UserCreate,
+    UserLogin,
+    UserLoginOut,
+    UserOut,
+    UserUpdate,
+    VerifyTokenOut,
+)
+from ...security import auth
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -37,6 +45,34 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)):
 @router.get("/", response_model=list[UserOut])
 def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return db.query(User).offset(skip).limit(limit).all()
+
+
+@router.post("/login", response_model=UserLoginOut)
+def login(payload: UserLogin, db: Session = Depends(get_db)):
+    user = (
+        db.query(User)
+        .filter(User.username == payload.username, User.password == payload.password)
+        .first()
+    )
+    
+    if not user :
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials"
+        )
+
+    access_token = auth.create_access_token(data={"sub": user.username})
+
+    return {
+        **UserOut.model_validate(user).model_dump(),
+        "access_token": access_token,
+        "token_type": "bearer",
+    }
+
+
+@router.get("/verifyToken", response_model=VerifyTokenOut)
+def verify_token(current_user: User = Depends(auth.get_current_user)):
+    return {"valid": True, "user": current_user}
 
 
 @router.get("/{user_id}", response_model=UserOut)
@@ -72,10 +108,4 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     return None
 
 
-@router.get("/login", response_model=list[UserOut])
-def login(username: str, password: str, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == username, User.password == password).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    return user
 

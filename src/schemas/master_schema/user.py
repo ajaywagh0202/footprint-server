@@ -38,3 +38,13 @@ class UserOut(BaseModel):
 class UserLogin(BaseModel):
     username: str
     password: str
+
+
+class UserLoginOut(UserOut):
+    access_token: str
+    token_type: str = "bearer"
+
+
+class VerifyTokenOut(BaseModel):
+    valid: bool
+    user: UserOut
