@@ -10,7 +10,7 @@ class StationMaster(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     station = Column(String, nullable=False)
     station_code = Column(String, nullable=False, unique=True)
-    station_type = Column(String, nullable=False)
+    station_type = Column(String, nullable=True)
     station_category = Column(String, nullable=False)
     district = Column(String, nullable=False)
     state = Column(String, nullable=False)

@@ -17,6 +17,12 @@ class DivisionGet(BaseModel):
 
     model_config = {"from_attributes": True}
 
+
+class DivisionWithZone(DivisionGet):
+    zone_name : str
+    zone_code : str
+
+
 class DivisionUpdate(BaseModel):
     division : Optional[str] = None
     division_code : Optional[str] = None
