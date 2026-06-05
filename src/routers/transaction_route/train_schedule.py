@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -27,18 +25,18 @@ def _commit(db: Session):
         ) from exc
 
 
-def _ensure_station(db: Session, station_id: UUID, detail: str = "Station not found"):
-    if not db.query(StationMaster).filter(StationMaster.id == station_id).first():
+def _ensure_station(db: Session, station_code: str, detail: str = "Station not found"):
+    if not db.query(StationMaster).filter(StationMaster.station_code == station_code).first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
 
 
 def _ensure_schedule_stations(db: Session, payload):
-    if payload.station_uid:
-        _ensure_station(db, payload.station_uid)
-    if payload.from_station_uid:
-        _ensure_station(db, payload.from_station_uid, "From station not found")
-    if payload.to_station_uid:
-        _ensure_station(db, payload.to_station_uid, "To station not found")
+    if payload.station_code:
+        _ensure_station(db, payload.station_code)
+    if payload.from_station_code:
+        _ensure_station(db, payload.from_station_code, "From station not found")
+    if payload.to_station_code:
+        _ensure_station(db, payload.to_station_code, "To station not found")
 
 
 @router.post("/", response_model=TrainScheduleGet, status_code=status.HTTP_201_CREATED)
@@ -52,12 +50,12 @@ def create_train_schedule(payload: TrainScheduleCreate, db: Session = Depends(ge
 
 
 @router.get("/", response_model=list[TrainScheduleGet])
-def get_train_schedules(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return db.query(TrainSchedule).offset(skip).limit(limit).all()
+def get_train_schedules(db: Session = Depends(get_db)):
+    return db.query(TrainSchedule).all()
 
 
 @router.get("/{schedule_id}", response_model=TrainScheduleGet)
-def get_train_schedule(schedule_id: UUID, db: Session = Depends(get_db)):
+def get_train_schedule(schedule_id: int, db: Session = Depends(get_db)):
     schedule = db.query(TrainSchedule).filter(TrainSchedule.id == schedule_id).first()
     if not schedule:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Train schedule not found")
@@ -66,7 +64,7 @@ def get_train_schedule(schedule_id: UUID, db: Session = Depends(get_db)):
 
 @router.put("/{schedule_id}", response_model=TrainScheduleGet)
 def update_train_schedule(
-    schedule_id: UUID,
+    schedule_id: int,
     payload: TrainScheduleUpdate,
     db: Session = Depends(get_db),
 ):
@@ -84,7 +82,7 @@ def update_train_schedule(
 
 
 @router.delete("/{schedule_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_train_schedule(schedule_id: UUID, db: Session = Depends(get_db)):
+def delete_train_schedule(schedule_id: int, db: Session = Depends(get_db)):
     schedule = db.query(TrainSchedule).filter(TrainSchedule.id == schedule_id).first()
     if not schedule:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Train schedule not found")

@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -34,12 +32,12 @@ def create_zone(payload: ZoneCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=list[ZoneGet])
-def get_zones(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return db.query(ZoneMaster).offset(skip).limit(limit).all()
+def get_zones(db: Session = Depends(get_db)):
+    return db.query(ZoneMaster).all()
 
 
 @router.get("/{zone_id}", response_model=ZoneGet)
-def get_zone(zone_id: UUID, db: Session = Depends(get_db)):
+def get_zone(zone_id: int, db: Session = Depends(get_db)):
     zone = db.query(ZoneMaster).filter(ZoneMaster.id == zone_id).first()
     if not zone:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Zone not found")
@@ -47,15 +45,15 @@ def get_zone(zone_id: UUID, db: Session = Depends(get_db)):
 
 
 @router.get("/{zone_id}/divisions", response_model=list[DivisionGet])
-def get_zone_divisions(zone_id: UUID, db: Session = Depends(get_db)):
+def get_zone_divisions(zone_id: int, db: Session = Depends(get_db)):
     zone = db.query(ZoneMaster).filter(ZoneMaster.id == zone_id).first()
     if not zone:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Zone not found")
-    return db.query(DivisionMaster).filter(DivisionMaster.zone_id == zone_id).all()
+    return db.query(DivisionMaster).filter(DivisionMaster.zone_code == zone.zone_code).all()
 
 
 @router.put("/{zone_id}", response_model=ZoneGet)
-def update_zone(zone_id: UUID, payload: ZoneUpdate, db: Session = Depends(get_db)):
+def update_zone(zone_id: int, payload: ZoneUpdate, db: Session = Depends(get_db)):
     zone = db.query(ZoneMaster).filter(ZoneMaster.id == zone_id).first()
     if not zone:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Zone not found")
@@ -69,7 +67,7 @@ def update_zone(zone_id: UUID, payload: ZoneUpdate, db: Session = Depends(get_db
 
 
 @router.delete("/{zone_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_zone(zone_id: UUID, db: Session = Depends(get_db)):
+def delete_zone(zone_id: int, db: Session = Depends(get_db)):
     zone = db.query(ZoneMaster).filter(ZoneMaster.id == zone_id).first()
     if not zone:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Zone not found")

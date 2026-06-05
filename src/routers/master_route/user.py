@@ -43,8 +43,8 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=list[UserOut])
-def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return db.query(User).offset(skip).limit(limit).all()
+def get_users(db: Session = Depends(get_db)):
+    return db.query(User).all()
 
 
 @router.post("/login", response_model=UserLoginOut)

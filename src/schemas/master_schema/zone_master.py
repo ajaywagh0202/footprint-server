@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from typing import Optional
-from uuid import UUID
 
 class ZoneCreate(BaseModel):
     zone : str
@@ -11,7 +10,7 @@ class ZoneCreate(BaseModel):
     model_config = {"from_attributes": True}
 
 class ZoneGet(BaseModel):
-    id : UUID
+    id : int
     zone : str
     zone_code : str
     headquarter : str

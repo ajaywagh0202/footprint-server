@@ -1,32 +1,30 @@
 from pydantic import BaseModel
 from typing import Optional
-from uuid import UUID
 
 class DivisionCreate(BaseModel):
     division : str
     division_code : str
     headquarter : str
-    zone_id : UUID
+    zone_code : str
 
 class DivisionGet(BaseModel):
-    id : UUID
+    id : int
     division : str
     division_code : str
     headquarter : str
-    zone_id : UUID
+    zone_code : str
 
     model_config = {"from_attributes": True}
 
 
 class DivisionWithZone(DivisionGet):
     zone_name : str
-    zone_code : str
 
 
 class DivisionUpdate(BaseModel):
     division : Optional[str] = None
     division_code : Optional[str] = None
     headquarter : Optional[str] = None
-    zone_id : Optional[UUID] = None
+    zone_code : Optional[str] = None
 
     model_config = {"from_attributes": True}

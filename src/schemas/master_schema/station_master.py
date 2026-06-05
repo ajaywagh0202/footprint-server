@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from typing import Optional
-from uuid import UUID
 
 
 class StationCreate(BaseModel):
@@ -10,19 +9,26 @@ class StationCreate(BaseModel):
     station_category : str
     district : str
     state : str
-    division_id : UUID
+    division_code : str
 
 class StationGet(BaseModel):
-    id : UUID
+    id : int
     station : str
     station_code : str
-    station_type : str
+    station_type : Optional[str] = None
     station_category : str
     district : str
     state : str
-    division_id : UUID
+    division_code : str
 
     model_config = {"from_attributes": True}
+
+
+class StationWithDivisionZone(StationGet):
+    division_name : str
+    zone_name : str
+    zone_code : str
+
 
 class StationUpdate(BaseModel):
     station : Optional[str] = None
@@ -31,6 +37,6 @@ class StationUpdate(BaseModel):
     station_category : Optional[str] = None
     district : Optional[str] = None
     state : Optional[str] = None
-    division_id : Optional[UUID] = None
+    division_code : Optional[str] = None
 
     model_config = {"from_attributes": True}

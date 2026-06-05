@@ -1,18 +1,15 @@
-import uuid
-from sqlalchemy import Column, String, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from ...database import Base
 
 class DivisionMaster(Base):
     __tablename__ = "division_master"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     division = Column(String, nullable=False)
-    division_code = Column(String, nullable=False, unique=True)
+    division_code = Column(String, nullable=False, unique=True, index=True)
     headquarter = Column(String, nullable=False)
-    zone_id = Column(UUID(as_uuid=True), ForeignKey("zone_master.id"), nullable=False)
+    zone_code = Column(String, ForeignKey("zone_master.zone_code"), nullable=False, index=True)
 
-    # Optional: ORM relationship for easy access
     zone = relationship("ZoneMaster", back_populates="divisions")
     stations = relationship("StationMaster", back_populates="division")

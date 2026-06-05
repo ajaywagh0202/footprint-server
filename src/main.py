@@ -8,6 +8,7 @@ from .database import Base, engine
 # from .models.Master.zone_master import ZoneMaster
 # from .models.Transaction.train_schedule import TrainSchedule
 from .routers.master_route import division, station, user, zone
+from .routers.manual_route import manuals
 from .routers.transaction_route import train_schedule
 
 app = FastAPI()
@@ -30,3 +31,4 @@ app.include_router(division.router)
 app.include_router(station.router)
 app.include_router(train_schedule.router)
 app.include_router(user.router)
+app.include_router(manuals.router)
